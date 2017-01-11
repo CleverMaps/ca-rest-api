@@ -1,0 +1,1219 @@
+FORMAT: 1A
+HOST: https://devel.cleverassets.cz/rest
+
+# CleverAssets REST API
+# Group Admin
+
+## Ping application [/app/ping]
+
+Perfect for checking application health (if is deployed in container and if connection to db and
+db server is working).
+
+### Ping application [GET]
+
++ Response 200 (application/json)
+
+        {
+            1
+        }
+
+## Move templates [/app/admin/move-templates]
+
+Moves all templates from files deployed in WAR to db for all projects.
+
+### Move templates [POST]
+
++ Response 200 (application/json)
+
++ Response 400 (text/plain)
+        
+# Group Users
+
+## Login User [/app/users/login{?username,password,keep}]
+
+Authorization of user.
+
+### Login user [GET]
+
++ Parameters
+    + username (string) - credentials
+    + password (string) - credentials
+    + keep (boolean) - keeps token valid longer (1 year, otherwise 15 minutes)
+    
++ Response 200 (application/json)
+
+        {
+            "user": {
+                    "username": "pan@email.cz",
+                    "name": "Jan Novák"
+            },
+            "token": "fsdklfjsdaiefwojivndsjldvsnsdldsf",
+            "defaultProjectKey": 26,
+            "projects": [
+                Project
+            ],
+            "permissions": [
+                {
+                    "ca_demo": [
+                        0: "read",
+                        1: "write"
+                    ]
+                }
+            ]
+        }
+
++ Response 401
+
+## Logout User [/app/users/logout]
+
+Logging out user.
+
+### Logout User [GET]
+
++ Response 200 (application/json)
+
+        {
+            true
+        }
+        
+## Change default Project [/app/users/changeDefaultProjectId]
+
+Saves given project id as a default project id for user.
+
+### Change default Project [PUT]
+
++ Request (application/json)
+
+        {
+            "newProjectId": 1
+        }
+        
++ Response 200 (application/json)
+
+        {
+            1
+        }
+        
++ Response 400 (text/plain)
+
+## Change password [/app/users/changePassword]
+        
+### Change password [PUT]
+
+Changes password for given user.
+
++ Request (application/json)
+
+        {
+            "username": "pan@email.cz",
+            "password": "fads312fds46",
+            "newPassword": "afd312fdsfd"
+        }
+        
++ Response 200
+
++ Response 304
+
+# Group Project
+
+## Group Contracts
+
+### Contracts [/{projectKey}/contracts{?state,sentForSignatureFlag,substateFlag,revisionId,validityState,contractNumberOfficial,expirationDate,subjectSearchText,subjectId,subcontract,withProposalAppendix,withValidAppendix,offset,limit,sortDir,sortedBy}]
+
+#### Create Contract [PUT]
+
+Creates contract by given contract object.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+
++ Response 200 (application/json)
+    + Attributes (ContractDataObject)
+    
++ Response 401 (text/plain)
+
+        Error message.
+
+#### List of Contracts [GET]
+
+Loads list of contracts by given filter parameters.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + state (array[string]) - List of contract states.
+    + sentForSignatureFlag (array[boolean]) - List of sent for signature flag.
+    + substateFlag (array[string]) - List of substates flag types.
+    + revisionId (array[number]) - List of revision ids.
+    + validityState (array[string]) - List of validity states.
+    + contractNumberOfficial (string) - Number of contract.
+    + expirationDate (string) - Expiration date string (YYYY-mm-dd).
+    + subjectSearchText (string) - String of subject.
+    + subjectId (number) - Id of subject.
+    + subcontract (boolean) - Flag for subcontracts.
+    + withProposalAppendix (boolean) - Flag for proposal appendixes.
+    + withValidAppendix (boolean) - Flag for valid appendixes.
+    + limit (number) - Limit for items.
+    + offset (number) - Offset for items.
+    + sortDir (string) - Asc or desc for ordering.
+    + sortedBy (string) - Ordering attribute.
+    
++ Response 200 (application/json)
+    + Attributes (ContractList)
+
+### Regenerate Contract Documents [/{projectKey}/contracts/regenerateDocuments]
+
+#### Regenerate Contract Documents [POST]
+
+Deletes and generates a new contract documents for contracts by given list of contract ids.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    
++ Request (application/json)
+    + Attributes (array[number])
+
++ Response 200 (application/json)
+
+### Contract [/{projectKey}/contracts/{contractId}]
+
+#### Get Contract by id [GET]
+
+Returns Contract by given id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract to load.
+    
++ Response 200 (application/json)
+    + Attributes (Contract)
+
+#### Update Contract [POST]
+
+Updates Contract with given id by given Contract object.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    
++ Request (application/json)
+    + Attributes (Contract)
+    
++ Response 200 (application/json)
+    + Attributes (Contract)
+
+#### Delete Contract [DELETE]
+
+Deletes Contract with given id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 204 (application/json)
+
+### Contract Attachments [/{projectKey}/contracts/{contractId}/attachments]
+
+#### Get Contract Attachments [GET]
+
+Returns list of contract attachments for given contract id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (AttachmentList)
+
+#### Upload Contract Attachment [POST]
+
+Uploads file as a Contract attachment.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    
++ Request (multipart/form-data, boundary=---BOUNDARY)
+    + Headers
+        
+            Authorization: "b80d008a94f215b25ec6dab77fa5bf6ace2ad123"
+            Content-Length: "6208"
+            
+    + Body
+        
+            ---BOUNDARY
+            Content-Disposition: form-data; name="filename"
+            
+            Domov.p5d
+            
+            ---BOUNDARY
+            Content-Disposition: form-data; name="file"; filename="Domov.p5d"
+            Content-Type: application/octet-stream
+            
+            Data of file
+            ---BOUNDARY
+            
++ Response 200 (application/json)
+    + Attributes (Attachment)
+
+### Contract Attachment [/{projectKey}/contracts/{contractId}/attachments/{attachmentId}]
+
+#### Delete Attachment [DELETE]
+
+Deletes attachment file by its id.
+
++ Parameters
+    + attachmentId (number) - Id of attachment.
+
++ Response 200
+
+### Contract Attachment Data [/{projectKey}/contracts/{contractId}/attachments/{attachmentId}/data]
+
+#### Get Contract Attachment Data [GET]
+
+Returns file by attachment id. 
+
++ Parameters
+    + attachmentId (number) - Id of attachment.
+
++ Response 200
+    + Headers
+        
+            Content-Disposition: attachment; filename=filename.txt
+            
+    + Body
+    
+            File body text.
+
+### Copy Contract [/{projectKey}/contracts/{contractId}/copy]
+
+#### Copy Contract [POST]
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract to copy.
+    
++ Response 200 (application/json)
+    + Attributes (Contract)
+
+### Update Contract State to Valid [/{projectKey}/contracts/{contractId}/update-state-valid{?sentForSignature}]
+
+#### Update Contract State to Valid [POST]
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    + sentForSignature (boolean) - Flag if contract state is sent for signature.
+    
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+        
+### Update Contract State to Signed [/{projectKey}/contracts/{contractId}/set-signed]
+
+#### Update Contract State to Signed [POST]
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+        
+### Update Contract State to Mistaken [/{projectKey}/contracts/{contractId}/update-state-mistaken]
+
+#### Update Contract State to Mistaken [POST]
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+        
+### Update Contract State to Proposal [/{projectKey}/contracts/{contractId}/update-state-proposal]
+
+#### Update Contract State to Proposal [POST]
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+        
+### Update Contract Revision state [/{projectKey}/contracts/{contractId}/stateaction/{action}]
+
+#### Update Contract Revision state [POST]
+
+Updates status of revision state on Contract.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+    + action (string) - Type of action to proceed.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 204 (application/json)
+
+### Update Contract state to Revision [/{projectKey}/contracts/{contractId}/staterevision/{revisionId}]
+
+#### Update Contract state to Revision [POST]
+
+Updates Contract state to revision and attach Revision by given id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    + revisionId (number) - Id of revision.
+    
++ Response 204 (application/json)
+
+### Update Contract note [/{projectKey}/contracts/{contractId}/note]
+
+#### Update Contract note [POST]
+
+Updates Contract note.
+
++ Parameters
+    + contractId (number) - Id of contract.
+
++ Request (application/json)
+    + Attributes (string)
+
++ Response 204 (application/json)
+
+### Update Contract end [/{projectKey}/contracts/{contractId}/end]
+
+#### Update Contract end [POST]
+
+Updates Contract end by given params.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+        
+### Revert Contract end [/{projectKey}/contracts/{contractId}/revertEnd]
+
+#### Revert Contract end [POST]
+
+Reverts Contract end by given contract id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + contractId (number) - Id of contract.
+
++ Response 204 (application/json)
+
+### Contract Parcels [/{projectKey}/contracts/{contractId}/parcels]
+
+#### Get Parcels by Contract id [GET]
+
+Loads and returns list of parcels of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (ParcelList)
+
+### Contract OwnerParams [/{projectKey}/contracts/{contractId}/ownerparams]
+
+#### Get Contract Owner Params by Contract id [GET]
+
+Loads and returns list of contract owner params of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (ContractOwnerParamList)
+
+### Contract ParcelData [/{projectKey}/contracts/{contractId}/contract-parcel-data]
+
+#### Get Contract Parcel Data by Contract id [GET]
+
+Loads and returns list of contract parcel data of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (ContractParcelDataList)
+
+### Contract SPOs [/{projectKey}/contracts/{contractId}/ownerships{?bsmType}]
+
+#### Get Contract SPOs by Contract id [GET]
+
+Loads and returns list of contract subject/parcel/ownership of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract to copy.
+    + bsmType (enum) - Required type of ownerships (ALL, SJM, NOSJM)
+    
++ Response 200 (application/json)
+    + Attributes (ContractSPOList)
+
+### Contract Payments [/{projectKey}/contracts/{contractId}/payments]
+
+#### Get Contract Payments by Contract id [GET]
+
+Loads and returns list of contract payments of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (ContractPaymentList)
+
+### Contract Geometries [/{projectKey}/contracts/{contractId}/geometries]
+
+#### Get Contract Geometries by Contract id [GET]
+
+Loads and returns list of contract geometries of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract to copy.
+    
++ Response 200 (application/json)
+    + Attributes (array[GeoJson])
+
+### Contract LPIS Geometries [/{projectKey}/contracts/{contractId}/lpisgeometry]
+
+#### Get Contract LPIS Geometries by Contract id [GET]
+
+Loads and returns list of contract LPIS geometries of contract by given contract id.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    
++ Response 200 (application/json)
+    + Attributes (array[GeoJson])
+
+### Compute Contract expiration date [/{projectKey}/contracts/{contractId}/compute-expiration-date{?endDate,resignDate}]
+
+#### Get Contract expiration date [GET]
+
+Computes Contract expiration date by given end or resign date and other contract data.
+
++ Parameters
+    + contractId (number) - Id of contract.
+    + endDate (string, optional) - Date of ending contract (YYYY-mm-dd).
+    + resignDate (string, optional) - Date of resign contract (YYYY-mm-dd).
+    
++ Response 200 (application/json)
+    + Attributes
+        + expirationDate (string) - Date of contract expiration (YYYY-mm-dd).
+
++ Response 401 (text/plain)
+    
+        Error message.
+        
+
+### Compute Contract expiration date [/{projectKey}/contracts/compute-expiration-date]
+
+#### Get Contract expiration date [POST]
+
+Computes Contract expiration date by given Contract data.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 200 (application/json)
+    + Attributes
+        + expirationDate (string) - Date of contract expiration (YYYY-mm-dd).
+
+### Compute Contract immediate notice date [/{projectKey}/contracts/compute-immediate-notice-date]
+
+#### Get Contract immediate notice date [POST]
+
+Computes Contract immediate notice date by given Contract data.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 200 (application/json)
+    + Attributes
+        + expirationDate (string) - Date of contract immediate notice (YYYY-mm-dd).
+
+### Compute Contract price individually [/{projectKey}/contracts/computePriceAndTaxIndividual]
+
+#### Get Contract price individually [POST]
+
+Computes Contract price for every subject individually.
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 200 (application/json)
+    + Attributes (ContractPriceList)
+
+### Search Contract [/{projectKey}/contracts/search{?searchText,subcontract,offset,limit}]
+
+#### Search Contract [GET]
+
+Search for Contract.
+
++ Parameters
+    + searchText (string) - Number or string to search.
+    + subcontract (boolean) - Contract/subcontract flag.
+    + limit (number) - Limit.
+    + offset (number) - Offset.
+    
++ Response 200 (application/json)
+    + Attributes (ContractSearchItemList)
+
+### Search Contract by contract number [/{projectKey}/contracts/searchByContractNumber{?searchText,subcontract,offset,limit}]
+
+#### Search Contract by contract number [GET]
+
+Search for contract.
+
++ Parameters
+    + searchText (string) - String to search.
+    + subcontract (boolean) - Contract/subcontract flag.
+    + limit (number) - Limit.
+    + offset (number) - Offset.
+    
++ Response 200 (application/json)
+    + Attributes (ContractSearchItemList)
+
+### Contract Rent Drupoz [/{projectKey}/contracts/{contractId}/rent-drupoz]
+
+#### Get Rent Drupoz by Contract id [GET]
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    
++ Response 200 (application/json)
+    + Attributes (ContractRentDrupozList)
+
+### Contract Successive Subjects [/{projectKey}/contracts/{contractId}/successive-subjects]
+
+#### Get Contract Successive Subjects [GET]
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    
++ Response 200 (application/json)
+    + Attributes (ContractSubjectParcelSuccessiveList)
+
+### Contract newest Parcel [/{projectKey}/contracts/{contractId}/newest-parcels]
+
+#### Get Contract newest Parcel [GET]
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    
++ Response 200 (application/json)
+    + Attributes (ContractParcelNewestList)
+
+### Related Contracts [/{projectKey}/contracts/{contractId}/related]
+
+#### Get Related Contracts [GET]
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    
++ Response 200 (application/json)
+    + Attributes (ContractList)
+
+### Update Contract optimal [/{projectKey}/contracts/updateContractOptimal{?limit}]
+
+#### Run update Contract optimal [GET]
+
++ Parameters
+    + limit (number)
+    
++ Response 204 (application/json)
+
++ Response 401 (text/plain)
+
+        Error message.
+
+### Contracts Payout Dates [/{projectKey}/contracts/payout-dates{?year}]
+
+#### Get Contracts Payout Dates [GET]
+
+Returns list of dates which are set as payout dates in contracts valid in the given year.
+
++ Parameters
+    + year (number) - From which year it gets payout dates.
+    
++ Response 200 (application/json)
+    + Attributes (array[string])
+
+### Contract Valid in year [/{projectKey}/contracts/isValidByYear{?year}]
+
+#### Is Contract Valid in year [GET]
+
+Returns true if Contract is valid in given year.
+
++ Parameters
+    + year (number) - Year to check validation in.
+    
++ Response 200 (application/json)
+    + Attributes (boolean)
+
+### Contract Payment unpaid amount [/{projectKey}/contracts/{contractId}/getContractPaymentUnpaidAmountByYearAndSubject{?year,subjectId}]
+
+#### Get by year, subject and contract [GET]
+
+Returns amount of unpaid payments in given year and for given subject and contract.
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    + year (number) - Year to check validation in.
+    + subjectId (number) - Subject entity id.
+    
++ Response 200 (application/json)
+    + Attributes (number)
+
+### Contract Payment information [/{projectKey}/contracts/{contractId}/paymentInformationBySubject{?year,subjectId}]
+
+#### Get by year, subject and contract [GET]
+
+Returns array of strings with informations related to payment in given year for given subject and contract.
+
++ Parameters
+    + contractId (number) - Contract entity id.
+    + year (number) - Year to get information from.
+    + subjectId (number) - Subject entity id.
+    
++ Response 200 (application/json)
+    + Attributes (array[string])
+
+### Reprice Contract [/{projectKey}/contracts/reprices{?limit}]
+
+#### Reprice Contract [GET]
+
+Reprice all available contracts according to parcel_reprice_log.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + limit (number)
+    
++ Response 204 (application/json)
+
+### Check Contract Parcel invalids [/{projectKey}/contracts/precheck-contract-parcel-invalids]
+
+#### Check Contract Parcel invalids [POST]
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 204 (application/json)
+
++ Response 401 (plain/text/)
+
+        Invalid parcels message.
+
+### Check Contract Parcel invalids for valid Contracts [/{projectKey}/contracts/{contractId}/precheck-contract-parcel-invalids-for-valid-contracts{?newState}]
+
+#### Check Contract Parcel invalids for valid Contracts [GET]
+
++ Parameters
+    + contractId (number) - Contract id.
+    + newState (string) - New state to check.
+    
++ Response 204 (application/json)
+
++ Response 401 (plain/text/)
+
+        Invalid parcels message.
+
+### Check Contract Payments to delete [/{projectKey}/contracts/{contractId}/check-payments-to-delete]
+
+#### Check Contract Payments to delete [GET]
+
+Returns true, if there is any Contract Payment, which could be deleted.
+
++ Parameters
+    + contractId (number) - Contract id.
+    
++ Response 200 (application/json)
+    + Attributes (boolean)
+
+### BSM conflict Contracts [/{projectKey}/contracts/bsm-conflicts{?parcelId,subjectId,contractId,state,bsmType,excludeContractId,signatureDate,expirationDate}]
+
+#### Get BSM conflict Contracts [GET]
+
++ Parameters
+    + contractId (number) - Contract id.
+    + parcelId (number)
+    + subjectId (number)
+    + state (string)
+    + bsmType (string)
+    + excludeContractId (array[number])
+    + signatureDate (string)
+    + expirationDate (string)
+    
++ Response 200 (application/json)
+    + Attributes (BsmConflictContractList)
+
+### Check Contract Ownerships [/{projectKey}/contracts/ownerships-check]
+
+#### Check Contract Ownerships [POST]
+
++ Request (application/json)
+    + Attributes (CreateContract)
+    
++ Response 204 (application/json)
+
+## Group Contract Export
+
+### Contract Exports [/{projectKey}/contracts/export/{exportName}]
+
+#### Get Contract Export [GET]
+
+TODO
+
++ Response 200 (application/json)
+
+## Group Areas
+
+### Areas [/{projectKey}/areas{?searchText,setSubjectIds}]
+    
+#### List of Areas [GET]
+
+Loads list of areas by given parameters.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + searchText (string) - Area name.
+    + setSubjectIds (array[number]) - Subjects who owns parcel in area.
+
++ Response 200 (application/json)
+    + Attributes (AreaList)
+    
+## Group Background Tasks
+
+### Background Task [/{projectKey}/background-tasks{?command}]
+
+#### Background Task by command [GET]
+
+Loads background task by command and project key.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + command (string) - Command of background task.
+    
++ Response 200 (application/json)
+    + Attributes (BackgroundTask)
+    
+## Group Banks
+
+### Banks [/{projectKey}/banks]
+
+#### List of Banks [GET]
+
+Loads list of all banks in db.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+
++ Response 200 (application/json)
+    + Attributes (BankList)
+    
+## Group Concerned
+
+### Concerned without LPIS [/{projectKey}/concerned/are-all-concerned-without-lpis]
+
+#### Are all concerned without LPIS [GET]
+
+Returns true if all concerned subjects are without LPIS id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    
++ Response 200 (application/json)
+    + Attributes (boolean)
+        
+## Group Contract Payment Export
+
+### Money Order [/{projectKey}/contract-payment-export/money-order{?filename,senderNumber,year,senderAccountNumberBefore,senderAccountNumber,bankCode,constSymbol,specSymbol}]
+
+#### Export Money Order [GET]
+
+Exports file for post office to pay out the contract payments.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + filename (string) - Name of the exported file.
+    + senderNumber (string) - Code of the sender (special post identifier).
+    + year (number) - Which year to export.
+    + senderAccountNumberBefore (string) - First part of the sender bank account number.
+    + senderAccountNumber (string) - Second (main) part of the sender bank account number.
+    + bankCode (string) - Bank code of the sender bank account number.
+    + constSymbol (string) - Constant symbol.
+    + specSymbol (string) - Specific symbol.
+    
++ Response 200 (text/plain)
+    + Headers
+        
+            Content-Disposition: attachment; filename=filename.txt
+            
+    + Body
+    
+            File body text.
+
+### GE Money ABO Bank Order [/{projectKey}/contract-payment-export/generate-gemoney-abo-bank-order{?year,bankAccountNumber}]
+
+#### Export GE Money ABO Bank Order [GET]
+
+Exports file which could be uploaded to GE Money Bank as a bank order of pay out the contract payments.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + year (number) - Which year to export.
+    + bankAccountNumber (string) - Bank account number of sender.
+    
++ Response 200 (text/plain)
+    + Headers
+        
+            Content-Disposition: attachment; filename=filename.txt
+            
+    + Body
+    
+            File body text.
+
+### KM Bank Order [/{projectKey}/contract-payment-export/generate-km-km-bank-order{?year,bankAccountNumber}]
+
+#### Export KM Bank Order [GET]
+
+Exports file which could be uploaded to banks as a bank order in KM format of pay out the contract payments.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + year (number) - Which year to export.
+    + bankAccountNumber (string) - Bank account number of sender.
+    
++ Response 200 (text/plain)
+    + Headers
+        
+            Content-Disposition: attachment; filename=filename.txt
+            
+    + Body
+    
+            File body text.
+
+## Group Cadastre
+
+### Cadastre Parcels [/{projectKey}/cadastre-parcels{?offset,limit,sortDir,sortedBy,parcis,katuzeKod,cadastreSubjectId}]
+
+#### List Cadastre Parcels [GET]
+
+Filters list of pars by given parameters.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + offset (number) - skips this number of records from beginning
+    + limit (number) - max number of loaded records
+    + sortDir (string) - way of sorting (asc or desc)
+    + sortedBy (string) - sorting attribute
+    + parcis (string) - number of parcel
+    + katuzeKod (number) - number of cadastre area
+    + cadastreSubjectId (number) - id of owner subject from cadastre
+
++ Response 200 (application/json)
+    + Attributes (ParList)
+
+### Cadastre Parcel [/{projectKey}/cadastre-parcels/{parcelId}]
+
+#### Get Parcel [GET]
+
+Gets par by its id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + parcelId (number, required) - Parcel id.
+
++ Response 200 (application/json)
+    + Attributes (Par)
+
+### Cadastre Ownerships [/{projectKey}/cadastre-parcels/{parcelId}/ownerships]
+
+#### Cadastre Ownerships by parcel id [GET]
+
+Gets vla items by given parcel id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + parcelId (number, required) - Parcel id.
+
++ Response 200 (application/json)
+
+        {
+            "itemCount": 20,
+            "items": [
+                Vla
+            ]
+        }
+        
+### Cadastre Parcel geometry [/{projectKey}/cadastre-parcels/{parcelId}/geometry]
+
+#### Cadastre Parcel geometry by parcel id [GET]
+
+Gets par geometry json by given parcel id.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + parcelId (number, required) - Parcel id.
+
++ Response 200 (application/json)
+    + Attributes (GeoJson)
+
+### Cadastre Subjects [/{projectKey}/cadastre-subjects{?offset,limit,sortDir,sortedBy,nazev,jmeno,prijmeni}]
+
+#### Cadastre Subject list [GET]
+
+Returns list of opsubs loaded by given parameters.
+
++ Parameters
+    + projectKey (string) - Project schema name.
+    + offset (number) - skips this number of records from beginning
+    + limit (number) - max number of loaded records
+    + sortDir (string) - way of sorting (asc or desc)
+    + sortedBy (string) - sorting attribute
+    + nazev (string) - name of the company
+    + jmeno (string) - name of the person
+    + prijmeni (string) - surname of the person
+    
++ Response 200 (application/json)
+
+        {
+            "itemCount": 20,
+            "items": [
+               Opsub
+            ]
+        }
+
+# Data Structures
+
+## AbstractDataObject (object)
++ dataMessage (string) - Message.
++ data (object) - Data.
+
+## AllCount (object)
++ allCount (number) - count of all items in db (without filter).
+
+## Area (object)
++ id: 1 (number, required) - Area id.
+
+## AreaList (object)
++ itemCount: 20 (number, required) - Count of all areas in db.
++ items (array[Area], required) - List of loaded areas.
+
+## Attachment (object)
++ id (number, required) - Attachment id.
++ name (string) - Attachment filename.
++ dataSize (number) - Attachment file size.
+
+## AttachmentList (object)
++ itemCount: 20 (number, required) - Count of all attachments in db.
++ items (array[Attachment], required) - List of loaded attachments.
+
+## Bank (object)
++ code (string) - Bank code.
++ name (string) - Bank name.
+
+## BankList (object)
++ itemCount: 20 (number, required) - Count of all banks in db.
++ items (array[Bank], required) - List of loaded banks.
+
+## BackgroundTask (object)
++ backgroundTaskPK (BackgroundTaskPk) - Primary key.
++ lastStart (string) - Last start datetime.
++ lastLaunch (string) - Last launch datetime.
+
+## BackgroundTaskPk (object)
++ projectKey: ca_demo (string) - Schema name.
++ command: generate (string) - Command to execute.
+
+## BsmConflictArea (object)
++ areaId (number) - Area entity id.
++ name (string)
++ parcels (array[BsmConflictParcel])
+
+## BsmConflictContract (object)
++ contractId (number) - Contract entity id.
++ contractNumber (string) - Official Contract number.
++ areas (array[BsmConflictArea])
+
+## BsmConflictContractList (object)
++ itemCount: 20 (number, required) - Count of all BsmConflictContracts in db.
++ items (array[BsmConflictContract], required) - List of loaded BsmConflictContracts.
+
+## BsmConflictParcel (object)
++ id (number) - Entity id.
++ parcis (string) - Number of parcel.
+
+## Contract (object)
++ id (number) - Entity id.
++ state (string) - State of contract.
+
+## ContractDataObject (object)
++ Include AbstractDataObject
++ contract (Contract)
+
+## ContractList (object)
++ itemCount: 20 (number, required) - Count of all contracts in db.
++ items (array[Contract], required) - List of loaded contracts.
++ params (AllCount)
+
+## ContractParcelNewest (object)
++ id (number) - Entity id.
++ contractId (number) - Contract entity id.
++ parcel (Parcel) - Parcel entity.
+
+## ContractParcelNewestList (object)
++ itemCount: 20 (number, required) - Count of all ContractParcelNewests in db.
++ items (array[ContractParcelNewest], required) - List of loaded ContractParcelNewests.
+
+## ContractOwnerParam (object)
++ id (number) - Entity id.
++ contractId (number) - Contract entity number.
++ subjectId (number) - Subject entity number.
++ priceContract (number) - Generated amount of money paid as a rent yearly.
++ priceAdd (number) - Manually added amount of money as rent repairment.
++ taxOwner (number) - Generated amount of money paid as a tax yearly.
++ taxOwnerAdd (number) - Manually added amount of money as tax repairment.
++ payoutDate (string) - Date of payout of payment (YYYY-mm-dd).
+
+## ContractOwnerParamList (object)
++ itemCount: 20 (number, required) - Count of all contractOwnerParams in db.
++ items (array[ContractOwnerParam], required) - List of loaded contractOwnerParams.
+
+## ContractParcelData (object)
++ id (number) - Entity id.
++ contractId (number) - Contract entity id.
++ parcelId (number) - Parcel entity id.
+
+## ContractParcelDataList (object)
++ itemCount: 20 (number, required) - Count of all contractParcelData in db.
++ items (array[ContractParcelData], required) - List of loaded contractParcelData.
+
+## ContractPayment (object)
++ id (number) - Entity id.
++ state (string) - State of payment.
++ paymentType (string) - Type of payment.
++ paymentYear (number) - Year of payment.
+
+## ContractPaymentList (object)
++ itemCount: 20 (number, required) - Count of all ContractPayments in db.
++ items (array[ContractPayment], required) - List of loaded ContractPayments.
+
+## ContractPrice (object)
++ subjectId (number) - Subject entity id.
++ priceContract (number) - Amount of money paid as a rent yearly.
++ taxOwner (number) - Amount of money paid as a tax by owner yearly.
++ taxTenant (number) - Amount of money paid as a tax by tenant yearly.
+
+## ContractPriceList (object)
++ itemCount: 20 (number, required) - Count of all ContractPrices in db.
++ items (array[ContractPrice], required) - List of loaded ContractPrices.
+
+## ContractRentDrupoz (object)
++ contractRentDrupozPK (ContractRentDrupozPK) - Primary key.
++ rentValue (number) - Rent amount.
+
+## ContractRentDrupozList (object)
++ itemCount: 20 (number, required) - Count of all ContractRentDrupozs in db.
++ items (array[ContractRentDrupoz], required) - List of loaded ContractRentDrupozs.
+
+## ContractRentDrupozPK (object)
++ contractId (number) - Contract entity id.
++ drupozKod (number) - Code of druh pozemku.
+
+## ContractSearchItem (object)
++ id (number) - Entity id.
++ counterpartyNumber (string)
++ contractNumberOfficial (string) - Official contract number.
++ contractNumber (string) - Contract number.
++ owners (array[Subject]) - Array of owners subjects.
++ tenants (array[Subject]) - Array of tenants subjects.
+
+## ContractSearchItemList (object)
++ itemCount: 20 (number, required) - Count of all ContractSearchItems in db.
++ items (array[ContractSearchItem], required) - List of loaded ContractSearchItems.
+
+## ContractSPO (object)
++ id (number) - Entity id.
++ subject (Subject) - Subject entity.
++ parcel (Parcel) - Parcel entity.
++ isBsm (boolean) - Flag if ownership is SJM.
++ podilCitatel (number) - Numerator of ownership part.
++ podilJmenovatel (number) - Denominator of ownership part.
+
+## ContractSPOList (object)
++ itemCount: 20 (number, required) - Count of all contractSPOs in db.
++ items (array[ContractSPO], required) - List of loaded contractSPOs.
+
+## ContractSubjectParcelSuccessive (object)
++ id (number) - Entity id.
++ contractId (number) - Contract entity id.
++ isNew (boolean)
++ parcel (Parcel)
++ subject (Subject)
++ pronajataVymera (number) - landed area of parcel by subject
+
+## ContractSubjectParcelSuccessiveList (object)
++ itemCount: 20 (number, required) - Count of all ContractSubjectParcelSuccessives in db.
++ items (array[ContractSubjectParcelSuccessive], required) - List of loaded ContractSubjectParcelSuccessives.
+
+## CreateContract (object)
++ id (number) - Contract id.
+
+## GeoJson (object)
++ geometry: blabla (string, required) - Geometry json.
+
+## Opsub (object)
++ id: 1 (number, required) - Entity id.
+
+## Par (object)
++ id: 1 (number, required) - Entity id.
+
+## Parcel (object)
++ id (number) - Parcel id.
++ parId (number) - Cadastre parcel id.
+
+## ParList (object)
++ itemCount: 20 (number, required) - Count of all pars in db.
++ items (array[Par], required) - List of loaded pars.
+
+## ParcelList (object)
++ itemCount: 20 (number, required) - Count of all parcels in db.
++ items (array[Parcel], required) - List of loaded parcels.
+
+## Project (object)
++ id: 1 (number, required) - Entity id.
++ key: ca_demo (string, required) - Project schema name.
++ name (string, required) - Project name.
+
+## Subject (object)
++ id (number) - Subject id.
++ subjectId (number) - Cadastre subject id.
+
+## Vla (object)
++ id: 1 (number, required) - Entity id.
